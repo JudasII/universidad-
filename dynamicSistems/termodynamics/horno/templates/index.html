@@ -1,0 +1,132 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <link rel="shortcut icon" href="">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header clearfix sub-container">
+            <h3 class="text-muted title">Horno</h3>
+        </div>
+        <br />
+        <div class="row">
+            <div class="jumbotron col-lg-5">
+                <div class="row marketing">
+                    <div class="col-lg-6">
+
+                        <div id="content"></div>
+
+                    </div>
+                </div>
+                </br>
+
+                <div id="divTemperatura">
+                    <form method="GET" action="/mostrar/" >{% csrf_token %}
+                        <div class="form-group row">
+                            <label for="inputPassword" class="col-sm-3 col-form-label title-form">Temp
+                                Referencia</label>
+                            <div class="row col-sm-9">
+                                <div class="col" name="temp">
+                                    <input type="text" name="Temperatura" id="temp" class="form-control"
+                                        id="inputPassword" >
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="form-group row">
+                            <label for="staticEmail" class="col-sm-3 col-form-label title-form">Temp Actual</label>
+                            <div class="col-sm-3">
+                                {% for elem in temperatura %}
+                                {{elem|safe}}
+                             {% endfor %}
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputPassword" class="col-sm-3 col-form-label title-form">Periodo (seg)</label>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control" name="periodo" value={{periodo}} >
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="inputPassword" class="col-sm-3 col-form-label title-form">Voltaje</label>
+                            <div class="row col-sm-4">
+                                <div class="col">
+                                    <input type="number" class="form-control" name="voltaje" value= {{voltaje}} >
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success" value="ok">On</button>
+                        <button type="button" id="btnApagar" class="btn btn-danger"">of</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-7" id="grafica" data-voltaje= {{voltaje}} data-periodo = {{periodo}}>
+                <div>
+                    <script>
+                        window.onload = function () {
+                           //voltage * measureT + previous
+                        var dps = []; // dataPoints
+                        var chart = new CanvasJS.Chart("chartContainer", {
+                            title :{
+                                text: "Temperatura del horno en funcion del tiempo"
+                            },
+                            data: [{
+                                type: "spline",
+                                dataPoints: dps
+                            }]
+                        });
+                        var tag = document.getElementById('grafica');
+                        var X = tag.getAttribute('data-y');
+                        console.log(JSON.stringify(X));
+                       // console.log(cosa);
+                       var periodo = parseFloat(tag.getAttribute('data-periodo'));
+                       var voltage= parseFloat(tag.getAttribute('data-voltaje'));
+                        var xVal = 0;
+                        var yVal = 18; 
+                        var updateInterval = 1000;
+                        var dataLength = 20; // number of dataPoints visible at any point
+                        
+                        var updateChart = function (count) {
+                        
+                            count = count || 1;
+                        
+                            for (var j = 0; j < count; j++) {
+                                yVal = yVal + voltage*periodo;
+                                xVal= xVal+ periodo;
+                                dps.push({
+                                    x: xVal,
+                                    y: yVal
+                                });
+                                
+                            }
+                        
+                            if (dps.length > dataLength) {
+                                dps.shift();
+                            }
+                        
+                            chart.render();
+                        };
+                        
+                        updateChart(dataLength);
+                        setInterval(function(){updateChart()}, updateInterval);
+                        
+                        }
+                    </script>
+                        <div id="chartContainer" style="height: 370px; width:100%;"></div>
+                        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+                </div>
+                <canvas id="chart-responsive" width="700" height="500"></canvas>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<footer>
+</footer>
+
+</html>
